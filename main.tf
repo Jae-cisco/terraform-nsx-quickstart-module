@@ -13,10 +13,12 @@ module nsx_data {
   environment = lower(var.environment)
 }
 
+#public network 대역 구성을 위한 세그먼트를 생성
 resource nsxt_policy_segment "public" {
   count               = length(var.public_subnets)
   display_name        = "${local.prefix}-${var.public_subnet_suffix}-${count.index}"
   description         = var.description
+  #public 세그먼트와 연결될 tier1 gateway를 지정
   connectivity_path   = nsxt_policy_tier1_gateway.this.path
   transport_zone_path = module.nsx_data.transport_zone_path
   subnet {
@@ -31,6 +33,7 @@ resource nsxt_policy_segment "public" {
   }
 }
 
+#private network 대역 구성을 위한 세그먼트를 생성
 resource nsxt_policy_segment "private" {
   count               = length(var.private_subnets)
   display_name        = "${local.prefix}-${var.private_subnet_suffix}-${count.index}"
@@ -49,6 +52,7 @@ resource nsxt_policy_segment "private" {
   }
 }
 
+#tier1 gateway 생성
 resource nsxt_policy_tier1_gateway "this" {
   description               = var.description
   display_name              = "${local.prefix}-gateway"
@@ -70,6 +74,7 @@ resource nsxt_policy_tier1_gateway "this" {
   }
 }
 
+#NAT 규칙 생성
 resource nsxt_policy_nat_rule "private" {
   count               = length(var.private_subnets)
   display_name        = "${local.prefix}-${var.private_subnet_suffix}-snat-${count.index}"
@@ -109,7 +114,7 @@ resource nsxt_policy_gateway_policy "private" {
     scope              = [nsxt_policy_tier1_gateway.this.path]
   }
 }
-
+#로드밸런서 생성
 resource nsxt_policy_lb_service "this" {
   display_name      = "${local.prefix}-lb"
   description       = var.description
