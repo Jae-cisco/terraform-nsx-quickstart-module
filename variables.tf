@@ -1,7 +1,7 @@
 variable prefix {
   description = "Naming prefix to be used on all provisioned resources"
   type        = string
-  default     = ""
+  default     = "cisco-jaheo"
 }
 
 variable description {
